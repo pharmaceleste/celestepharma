@@ -52,9 +52,13 @@
       border-radius: 8px;
       padding: 1rem;
       margin: 1rem auto;
-      width: 50%;
+      width: 60%;
       text-align: right;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .order-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
     }
   </style>
 </head>
@@ -139,20 +143,42 @@
       }
     }
 
+    function groupOrdersByCustomer(orders) {
+      const groups = {};
+      orders.forEach(order => {
+        const key = `${order.customerName}-${order.customerPhone}`;
+        if (!groups[key]) {
+          groups[key] = {
+            name: order.customerName,
+            phone: order.customerPhone,
+            orders: []
+          };
+        }
+        groups[key].orders.push(order);
+      });
+      return Object.values(groups);
+    }
+
     window.onload = function () {
-      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const rawOrders = JSON.parse(localStorage.getItem('orders')) || [];
+      const groupedOrders = groupOrdersByCustomer(rawOrders);
       const container = document.getElementById('order-list');
 
-      if (orders.length === 0) {
+      if (groupedOrders.length === 0) {
         container.innerHTML = "<p>لا توجد طلبات حالياً.</p>";
       } else {
-        orders.forEach(order => {
+        groupedOrders.forEach(group => {
           const div = document.createElement('div');
           div.className = "order-box";
           div.innerHTML = `
-            <strong>المنتج:</strong> ${order.name}<br>
-            <strong>الكمية:</strong> ${order.quantity}<br>
-            <strong>تاريخ الطلب:</strong> ${order.date}
+            <strong>الزبون:</strong> ${group.name}<br>
+            <strong>رقم الهاتف:</strong> ${group.phone}<br><br>
+            <strong>الطلبات:</strong><br>
+            ${group.orders.map(o => `
+              <div class="order-item">
+                - ${o.name} | الكمية: ${o.quantity} | بتاريخ: ${o.date}
+              </div>
+            `).join('')}
           `;
           container.appendChild(div);
         });
