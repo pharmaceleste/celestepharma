@@ -19,9 +19,6 @@
       text-align: center;
     }
     .products {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
       padding: 2rem;
     }
     .product {
@@ -29,9 +26,8 @@
       border: 1px solid #b0bec5;
       border-radius: 10px;
       padding: 1rem;
-      margin: 1rem;
-      width: 250px;
-      text-align: center;
+      margin: 1rem 0;
+      width: 100%;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     footer {
@@ -41,10 +37,11 @@
       padding: 1rem;
       margin-top: 2rem;
     }
-    input[type="number"] {
-      width: 80%;
+    input[type="number"], input[type="text"], input[type="tel"] {
+      width: 100%;
       padding: 0.5rem;
       margin-top: 0.5rem;
+      margin-bottom: 1rem;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
@@ -52,9 +49,9 @@
       background-color: #007c91;
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.5rem;
       border-radius: 5px;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
       cursor: pointer;
     }
     button:hover {
@@ -68,8 +65,14 @@
     <h1>منتجات سيليست فارما</h1>
   </header>
 
-  <section class="products" id="product-list">
-    <!-- المنتجات ستظهر هنا -->
+  <section class="products">
+    <div style="max-width: 600px; margin: auto; background: #fff; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h2>إرسال طلب</h2>
+      <input type="text" id="customer-name" placeholder="اسمك الكامل" required>
+      <input type="tel" id="customer-phone" placeholder="رقم الهاتف" required>
+      <div id="product-list"></div>
+      <button onclick="submitOrder()">إرسال الطلب</button>
+    </div>
   </section>
 
   <footer>
@@ -87,55 +90,61 @@
       }
 
       products.forEach((product, index) => {
-        const productElement = document.createElement('div');
-        productElement.className = 'product';
-
-        let html = `
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
           <h3>${product.name}</h3>
           <p>تاريخ الصلاحية: ${product.expiryDate}</p>
+          <p>الكمية المتوفرة: ${product.quantity}</p>
+          ${
+            product.quantity > 0
+              ? `<input type="number" min="0" max="${product.quantity}" placeholder="الكمية المطلوبة" id="qty-${index}">`
+              : `<p style="color:red;">غير متوفر حالياً</p>`
+          }
         `;
-
-        if (product.quantity > 0) {
-          html += `
-            <p>الكمية المتوفرة: ${product.quantity}</p>
-            <input type="number" min="1" max="${product.quantity}" placeholder="الكمية" id="qty-${index}" />
-            <button onclick="orderProduct('${product.name}', ${index}, ${product.quantity})">طلب المنتج</button>
-          `;
-        } else {
-          html += `<p style="color:red;"><strong>المنتج غير متوفر حالياً</strong></p>`;
-        }
-
-        productElement.innerHTML = html;
-        productList.appendChild(productElement);
+        productList.appendChild(div);
       });
     };
 
-    function orderProduct(productName, index, availableQty) {
-      const qtyInput = document.getElementById(`qty-${index}`);
-      const quantity = parseInt(qtyInput.value);
-
-      if (!quantity || quantity <= 0) {
-        alert("يرجى إدخال كمية صالحة");
-        return;
-      }
-
-      if (quantity > availableQty) {
-        alert("الكمية المطلوبة غير متوفرة");
-        return;
-      }
-
+    function submitOrder() {
+      const name = document.getElementById('customer-name').value.trim();
+      const phone = document.getElementById('customer-phone').value.trim();
+      const products = JSON.parse(localStorage.getItem('products')) || [];
       const orders = JSON.parse(localStorage.getItem('orders')) || [];
       const orderDate = new Date().toLocaleDateString();
 
-      orders.push({
-        name: productName,
-        quantity: quantity,
-        date: orderDate
+      if (!name || !phone) {
+        alert("يرجى إدخال اسمك ورقم الهاتف.");
+        return;
+      }
+
+      let hasValidOrder = false;
+
+      products.forEach((product, index) => {
+        const qtyInput = document.getElementById(`qty-${index}`);
+        if (!qtyInput || !qtyInput.value) return;
+
+        const quantity = parseInt(qtyInput.value);
+        if (quantity > 0 && quantity <= product.quantity) {
+          hasValidOrder = true;
+          orders.push({
+            customerName: name,
+            customerPhone: phone,
+            name: product.name,
+            quantity: quantity,
+            date: orderDate
+          });
+        }
       });
+
+      if (!hasValidOrder) {
+        alert("يرجى تحديد منتج واحد على الأقل بكمية صحيحة.");
+        return;
+      }
 
       localStorage.setItem('orders', JSON.stringify(orders));
       alert("تم إرسال الطلب بنجاح!");
-      qtyInput.value = '';
+      window.location.reload();
     }
   </script>
 
