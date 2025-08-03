@@ -60,6 +60,17 @@
       padding: 0.5rem 0;
       border-bottom: 1px solid #eee;
     }
+    button.accept-btn {
+      background-color: green;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button.accept-btn:hover {
+      background-color: darkgreen;
+    }
   </style>
 </head>
 <body>
@@ -145,44 +156,71 @@
 
     function groupOrdersByCustomer(orders) {
       const groups = {};
-      orders.forEach(order => {
+      orders.forEach((order, index) => {
         const key = `${order.customerName}-${order.customerPhone}`;
         if (!groups[key]) {
           groups[key] = {
             name: order.customerName,
             phone: order.customerPhone,
-            orders: []
+            orders: [],
+            orderIndexes: []
           };
         }
         groups[key].orders.push(order);
+        groups[key].orderIndexes.push(index);
       });
-      return Object.values(groups);
+      return Object.entries(groups);
+    }
+
+    function acceptOrder(indexes) {
+      let orders = JSON.parse(localStorage.getItem('orders')) || [];
+      let products = JSON.parse(localStorage.getItem('products')) || [];
+
+      for (let i of indexes) {
+        const order = orders[i];
+        const pIndex = products.findIndex(p => p.name === order.name);
+        if (pIndex !== -1 && products[pIndex].quantity >= order.quantity) {
+          products[pIndex].quantity -= order.quantity;
+        } else {
+          alert(`الكمية غير كافية للمنتج: ${order.name}`);
+          return;
+        }
+      }
+
+      indexes.sort((a, b) => b - a).forEach(i => orders.splice(i, 1));
+
+      localStorage.setItem('products', JSON.stringify(products));
+      localStorage.setItem('orders', JSON.stringify(orders));
+      alert("تم قبول الطلب وتحديث الكمية.");
+      location.reload();
     }
 
     window.onload = function () {
-      const rawOrders = JSON.parse(localStorage.getItem('orders')) || [];
-      const groupedOrders = groupOrdersByCustomer(rawOrders);
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const grouped = groupOrdersByCustomer(orders);
       const container = document.getElementById('order-list');
 
-      if (groupedOrders.length === 0) {
+      if (grouped.length === 0) {
         container.innerHTML = "<p>لا توجد طلبات حالياً.</p>";
-      } else {
-        groupedOrders.forEach(group => {
-          const div = document.createElement('div');
-          div.className = "order-box";
-          div.innerHTML = `
-            <strong>الزبون:</strong> ${group.name}<br>
-            <strong>رقم الهاتف:</strong> ${group.phone}<br><br>
-            <strong>الطلبات:</strong><br>
-            ${group.orders.map(o => `
-              <div class="order-item">
-                - ${o.name} | الكمية: ${o.quantity} | بتاريخ: ${o.date}
-              </div>
-            `).join('')}
-          `;
-          container.appendChild(div);
-        });
+        return;
       }
+
+      grouped.forEach(([key, group]) => {
+        const div = document.createElement('div');
+        div.className = "order-box";
+        div.innerHTML = `
+          <strong>الزبون:</strong> ${group.name}<br>
+          <strong>رقم الهاتف:</strong> ${group.phone}<br><br>
+          ${group.orders.map(o => `
+            <div class="order-item">
+              - ${o.name} | الكمية: ${o.quantity} | بتاريخ: ${o.date}
+            </div>
+          `).join('')}
+          <br>
+          <button class="accept-btn" onclick="acceptOrder([${group.orderIndexes.join(',')}])">قبول الطلب</button>
+        `;
+        container.appendChild(div);
+      });
 
       displayProducts();
     };
