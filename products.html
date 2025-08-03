@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>منتجاتنا - Celeste Pharma</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5fafd;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #007c91;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .product {
+      background-color: #ffffff;
+      border: 1px solid #b0bec5;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem;
+      width: 250px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    footer {
+      background-color: #004d61;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+    input[type="number"] {
+      width: 80%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #007c91;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005c6b;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>منتجات سيليست فارما</h1>
+  </header>
+
+  <section class="products" id="product-list">
+    <!-- المنتجات ستظهر هنا -->
+  </section>
+
+  <footer>
+    &copy; 2025 سيليست فارما - جميع الحقوق محفوظة
+  </footer>
+
+  <script>
+    window.onload = function () {
+      const products = JSON.parse(localStorage.getItem('products')) || [];
+      const productList = document.getElementById('product-list');
+
+      if (products.length === 0) {
+        productList.innerHTML = "<p>لا توجد منتجات حالياً.</p>";
+        return;
+      }
+
+      products.forEach((product, index) => {
+        const productElement = document.createElement('div');
+        productElement.className = 'product';
+
+        let html = `
+          <h3>${product.name}</h3>
+          <p>تاريخ الصلاحية: ${product.expiryDate}</p>
+        `;
+
+        if (product.quantity > 0) {
+          html += `
+            <p>الكمية المتوفرة: ${product.quantity}</p>
+            <input type="number" min="1" max="${product.quantity}" placeholder="الكمية" id="qty-${index}" />
+            <button onclick="orderProduct('${product.name}', ${index}, ${product.quantity})">طلب المنتج</button>
+          `;
+        } else {
+          html += `<p style="color:red;"><strong>المنتج غير متوفر حالياً</strong></p>`;
+        }
+
+        productElement.innerHTML = html;
+        productList.appendChild(productElement);
+      });
+    };
+
+    function orderProduct(productName, index, availableQty) {
+      const qtyInput = document.getElementById(`qty-${index}`);
+      const quantity = parseInt(qtyInput.value);
+
+      if (!quantity || quantity <= 0) {
+        alert("يرجى إدخال كمية صالحة");
+        return;
+      }
+
+      if (quantity > availableQty) {
+        alert("الكمية المطلوبة غير متوفرة");
+        return;
+      }
+
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const orderDate = new Date().toLocaleDateString();
+
+      orders.push({
+        name: productName,
+        quantity: quantity,
+        date: orderDate
+      });
+
+      localStorage.setItem('orders', JSON.stringify(orders));
+      alert("تم إرسال الطلب بنجاح!");
+      qtyInput.value = '';
+    }
+  </script>
+
+</body>
+</html>

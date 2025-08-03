@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Celeste Pharma</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5fafd;
+      color: #333;
+    }
+    header {
+      background-color: #007c91;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header img {
+      height: 60px;
+    }
+    nav a {
+      color: white;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .hero {
+      background: linear-gradient(to left, #e1f5fe, #ffffff);
+      padding: 3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .hero-content {
+      max-width: 400px;
+      text-align: center;
+    }
+    .hero h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #007c91;
+    }
+    .hero img {
+      max-width: 300px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .section {
+      padding: 2rem;
+      text-align: center;
+    }
+    .products {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .product {
+      background-color: #ffffff;
+      border: 1px solid #b0bec5;
+      border-radius: 10px;
+      padding: 1rem;
+      width: 200px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .product h3 {
+      color: #007c91;
+    }
+    footer {
+      background-color: #004d61;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+    a {
+      color: #007c91;
+      text-decoration: none;
+    }
+
+    /* Styles for the login form */
+    .login-form {
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      margin: 0 auto;
+      margin-top: 2rem;
+    }
+    .login-form input {
+      width: 100%;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .login-form button {
+      background-color: #007c91;
+      color: white;
+      border: none;
+      padding: 1rem;
+      width: 100%;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .login-form button:hover {
+      background-color: #005c6b;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="images/logo.png" alt="شعار سيليست فارما">
+    <nav>
+      <a href="products.html">منتجاتنا</a>
+      <a href="#contact">تواصل معنا</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h2>الرعاية الصحية تبدأ من هنا</h2>
+      <p>منتجات طبية عالية الجودة – الدفع عند الاستلام متاح!</p>
+    </div>
+    <img src="images/healthcare-banner.jpg" alt="صورة طبية">
+  </section>
+
+  <!-- نموذج تسجيل الدخول للمسؤولين -->
+  <section class="section">
+    <h2>تسجيل الدخول للمسؤولين</h2>
+    <div class="login-form">
+      <input type="text" id="username" placeholder="اسم المستخدم" />
+      <input type="password" id="password" placeholder="كلمة المرور" />
+      <button onclick="login()">دخول</button>
+      <p id="login-message" style="color: red; text-align: center;"></p>
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <h2>تواصل معنا</h2>
+    <p>
+      راسلنا على:
+      <a href="https://mail.google.com/mail/?view=cm&to=contact@celestepharma.com" target="_blank">
+        contact@celestepharma.com
+      </a>
+    </p>
+    <p>أو اتصل بنا: +213 770 000 000</p>
+  </section>
+
+  <footer>
+    &copy; 2025 سيليست فارما - جميع الحقوق محفوظة
+  </footer>
+
+  <script>
+    // Function to validate login
+    function login() {
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+
+      // Check if the username and password match the admin credentials
+      if (username === "admin" && password === "admin123") {
+        window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
+      } else {
+        document.getElementById('login-message').textContent = "اسم المستخدم أو كلمة المرور غير صحيحة!";
+      }
+    }
+  </script>
+
+</body>
+</html>
