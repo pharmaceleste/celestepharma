@@ -20,28 +20,33 @@
     }
     .products {
       padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    .category-section {
+      margin-bottom: 3rem;
+    }
+    .category-section h3 {
+      background-color: #e0f7fa;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
     }
     .product {
       background-color: #ffffff;
       border: 1px solid #b0bec5;
       border-radius: 10px;
       padding: 1rem;
-      margin: 1rem 0;
-      width: 100%;
+      margin-bottom: 1rem;
+      text-align: right;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
-    footer {
-      background-color: #004d61;
-      color: white;
-      text-align: center;
-      padding: 1rem;
-      margin-top: 2rem;
-    }
-    input[type="number"], input[type="text"], input[type="tel"] {
+    input[type="number"],
+    input[type="text"],
+    input[type="tel"] {
       width: 100%;
       padding: 0.5rem;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
+      margin: 0.5rem 0;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
@@ -51,11 +56,18 @@
       border: none;
       padding: 0.75rem 1.5rem;
       border-radius: 5px;
-      margin-top: 1rem;
       cursor: pointer;
+      margin-top: 1rem;
     }
     button:hover {
       background-color: #005c6b;
+    }
+    footer {
+      background-color: #004d61;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -66,13 +78,13 @@
   </header>
 
   <section class="products">
-    <div style="max-width: 600px; margin: auto; background: #fff; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <h2>إرسال طلب</h2>
-      <input type="text" id="customer-name" placeholder="اسمك الكامل" required>
-      <input type="tel" id="customer-phone" placeholder="رقم الهاتف" required>
-      <div id="product-list"></div>
-      <button onclick="submitOrder()">إرسال الطلب</button>
-    </div>
+    <h2 style="text-align:center;">طلب منتجات</h2>
+    <input type="text" id="customer-name" placeholder="اسمك الكامل" required>
+    <input type="tel" id="customer-phone" placeholder="رقم الهاتف" required>
+
+    <div id="product-list"></div>
+
+    <button onclick="submitOrder()">إرسال الطلب</button>
   </section>
 
   <footer>
@@ -82,28 +94,63 @@
   <script>
     window.onload = function () {
       const products = JSON.parse(localStorage.getItem('products')) || [];
-      const productList = document.getElementById('product-list');
+      const container = document.getElementById('product-list');
 
       if (products.length === 0) {
-        productList.innerHTML = "<p>لا توجد منتجات حالياً.</p>";
+        container.innerHTML = "<p>لا توجد منتجات حالياً.</p>";
         return;
       }
 
+      const categories = {
+        Furgo: [],
+        Suro: [],
+        Rupture: [],
+        Other: []
+      };
+
       products.forEach((product, index) => {
-        const div = document.createElement('div');
-        div.className = 'product';
-        div.innerHTML = `
-          <h3>${product.name}</h3>
-          <p>تاريخ الصلاحية: ${product.expiryDate}</p>
-          <p>الكمية المتوفرة: ${product.quantity}</p>
-          ${
-            product.quantity > 0
-              ? `<input type="number" min="0" max="${product.quantity}" placeholder="الكمية المطلوبة" id="qty-${index}">`
-              : `<p style="color:red;">غير متوفر حالياً</p>`
-          }
-        `;
-        productList.appendChild(div);
+        const cat = product.category || "Other";
+        if (categories[cat]) {
+          categories[cat].push({ ...product, index });
+        } else {
+          categories.Other.push({ ...product, index });
+        }
       });
+
+      container.innerHTML = "";
+
+      const arabicLabels = {
+        Furgo: "منتجات Furgo",
+        Suro: "منتجات Suro",
+        Rupture: "منتجات Rupture",
+        Other: "منتجات أخرى"
+      };
+
+      for (const [cat, items] of Object.entries(categories)) {
+        if (items.length === 0) continue;
+
+        const section = document.createElement('div');
+        section.className = "category-section";
+        section.innerHTML = `<h3>${arabicLabels[cat]}</h3>`;
+
+        items.forEach(product => {
+          const div = document.createElement('div');
+          div.className = "product";
+          div.innerHTML = `
+            <strong>${product.name}</strong><br>
+            <span>تاريخ الصلاحية: ${product.expiryDate}</span><br>
+            <span>الكمية المتوفرة: ${product.quantity}</span><br>
+            ${
+              product.quantity > 0
+                ? `<input type="number" id="qty-${product.index}" min="0" max="${product.quantity}" placeholder="الكمية المطلوبة">`
+                : `<p style="color:red;">المنتج غير متوفر حالياً</p>`
+            }
+          `;
+          section.appendChild(div);
+        });
+
+        container.appendChild(section);
+      }
     };
 
     function submitOrder() {
@@ -111,40 +158,40 @@
       const phone = document.getElementById('customer-phone').value.trim();
       const products = JSON.parse(localStorage.getItem('products')) || [];
       const orders = JSON.parse(localStorage.getItem('orders')) || [];
-      const orderDate = new Date().toLocaleDateString();
+      const date = new Date().toLocaleDateString();
 
       if (!name || !phone) {
         alert("يرجى إدخال اسمك ورقم الهاتف.");
         return;
       }
 
-      let hasValidOrder = false;
+      let hasOrder = false;
 
       products.forEach((product, index) => {
-        const qtyInput = document.getElementById(`qty-${index}`);
-        if (!qtyInput || !qtyInput.value) return;
+        const input = document.getElementById(`qty-${index}`);
+        if (!input || !input.value) return;
 
-        const quantity = parseInt(qtyInput.value);
-        if (quantity > 0 && quantity <= product.quantity) {
-          hasValidOrder = true;
+        const qty = parseInt(input.value);
+        if (qty > 0 && qty <= product.quantity) {
+          hasOrder = true;
           orders.push({
             customerName: name,
             customerPhone: phone,
             name: product.name,
-            quantity: quantity,
-            date: orderDate
+            quantity: qty,
+            date: date
           });
         }
       });
 
-      if (!hasValidOrder) {
-        alert("يرجى تحديد منتج واحد على الأقل بكمية صحيحة.");
+      if (!hasOrder) {
+        alert("يرجى اختيار منتج واحد على الأقل.");
         return;
       }
 
       localStorage.setItem('orders', JSON.stringify(orders));
       alert("تم إرسال الطلب بنجاح!");
-      window.location.reload();
+      location.reload();
     }
   </script>
 
